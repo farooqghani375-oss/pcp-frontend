@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 
 const inputDir = path.join(__dirname, 'public', 'images')
-const files = fs.readdirSync(inputDir)
+const files = fs.readdirSync(inputDir).filter(f => !f.startsWith('temp-'))
 
 async function compressAll() {
   for (const file of files) {
@@ -13,16 +13,21 @@ async function compressAll() {
     const filePath = path.join(inputDir, file)
     const tempPath = path.join(inputDir, `temp-${file}`)
 
-    await sharp(filePath)
-      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 75 })
-      .toFile(tempPath)
+    try {
+      await sharp(filePath)
+        .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+        .toFormat(ext === '.png' ? 'png' : 'jpeg', { quality: 75 })
+        .toFile(tempPath)
 
-    fs.unlinkSync(filePath)
-    fs.renameSync(tempPath, filePath)
-    console.log(`Compressed: ${file}`)
+      fs.unlinkSync(filePath)
+      fs.renameSync(tempPath, filePath)
+      console.log(`✅ Compressed: ${file}`)
+    } catch (err) {
+      console.log(`❌ FAILED: ${file} — ${err.message}`)
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath)
+    }
   }
-  console.log('Done! All images compressed.')
+  console.log('Done!')
 }
 
 compressAll()
