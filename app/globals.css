@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f8f4ef;
+    color: #1a1a1a;
+    padding-bottom: 70px;
+  }
+  
+  /* Remove bottom padding on desktop — no bottom nav */
+  @media (min-width: 1024px) {
+    body { padding-bottom: 0; }
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* Auto-scrolling marquee */
+@keyframes scroll-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: scroll-left 28s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
