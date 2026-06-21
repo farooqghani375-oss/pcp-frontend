@@ -65,7 +65,7 @@ export default function ChatWidget() {
         >
           {/* Header */}
           <div className="bg-primary-dark text-white px-4 py-3 flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-lg">🌿</div>
+            <div className="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-lg">🤖</div>
             <div className="flex-1">
               <p className="text-sm font-bold leading-tight">Plant Center Assistant</p>
               <p className="text-[10px] text-green-300">Usually replies instantly</p>
