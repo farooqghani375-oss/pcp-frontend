@@ -19,7 +19,7 @@ export default function ContactPage() {
     const msg = encodeURIComponent(
       `*Contact Form — PCP*\n\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\n\nMessage:\n${form.message}`
     )
-    window.open(`https://wa.me/923001234567?text=${msg}`, '_blank')
+    window.open(`https://wa.me/923199004866?text=${msg}`, '_blank')
     toast.success('Opening WhatsApp...')
     setForm({ name: '', email: '', phone: '', message: '' })
   }
@@ -46,8 +46,8 @@ export default function ContactPage() {
             <div className="flex flex-col gap-5">
               {[
                 { icon: '📍', title: 'Address',  value: 'University Road, Peshawar, KPK, Pakistan'                        },
-                { icon: '📞', title: 'Phone',    value: '+92 300 123 4567'                                                 },
-                { icon: '💬', title: 'WhatsApp', value: '+92 300 123 4567'                                                 },
+                { icon: '📞', title: 'Phone',    value: '92 319 9004866'                                                 },
+                { icon: '💬', title: 'WhatsApp', value: '92 319 9004866'                                                 },
                 { icon: '🕐', title: 'Hours',    value: 'Mon–Sat: 9am – 8pm\nSunday: 10am – 6pm'                         },
               ].map(item => (
                 <div key={item.title} className="flex gap-4 items-start">

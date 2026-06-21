@@ -22,55 +22,39 @@ export default function CartPage() {
   }
 
   async function handleOrder() {
-    if (!form.name || !form.phone || !form.address) {
-      toast.error('Please fill in your name, phone and address')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const orderData = {
-        customer: form,
-        items: cart.map(i => ({
-          productId: i.id,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
-          color: i.selectedColor,
-        })),
-        subtotal,
-        shipping: SHIPPING,
-        total,
-        payment,
-      }
-
-      const result = await placeOrder(orderData)
-
-      // Also send WhatsApp message (same as old site)
-      const msg = cart.map(i =>
-        `• ${i.name} x${i.quantity} — Rs ${(i.price * i.quantity).toLocaleString()}`
-      ).join('\n')
-
-      const wa = encodeURIComponent(
-        `*New Order #${result.orderId} — PCP*\n\n${msg}\n\n` +
-        `Subtotal: Rs ${subtotal.toLocaleString()}\n` +
-        `Shipping: Rs ${SHIPPING}\n` +
-        `*Total: Rs ${total.toLocaleString()}*\n\n` +
-        `Name: ${form.name}\nPhone: ${form.phone}\nAddress: ${form.address}, ${form.city}\n` +
-        `Payment: ${payment === 'cod' ? 'Cash on Delivery' : 'Bank Transfer'}`
-      )
-
-      clearCart()
-      toast.success(`Order #${result.orderId} placed!`)
-      window.open(`https://wa.me/923001234567?text=${wa}`, '_blank')
-      router.push('/')
-    } catch (err) {
-      toast.error('Failed to place order. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  if (!form.name || !form.phone || !form.address) {
+    toast.error('Please fill in your name, phone and address')
+    return
   }
 
+  setLoading(true)
+  try {
+    const orderData = {
+      customer: form,
+      items: cart.map(i => ({
+        productId: i.id,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        color: i.selectedColor,
+      })),
+      subtotal,
+      shipping: SHIPPING,
+      total,
+      payment,
+    }
+
+    const result = await placeOrder(orderData)
+
+    clearCart()
+    toast.success(`Order #${result.orderId} placed successfully!`)
+    router.push('/')
+  } catch (err) {
+    toast.error('Failed to place order. Please try again.')
+  } finally {
+    setLoading(false)
+  }
+}
   if (totalItems === 0) {
     return (
       <div className="pt-14 max-w-lg mx-auto px-4 text-center py-20">
