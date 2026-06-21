@@ -152,7 +152,7 @@ export default function CartPage() {
         <div className="flex gap-3">
           {[
             { value: 'cod',  label: '💵 Cash on Delivery' },
-            { value: 'bank', label: '🏦 Bank Transfer'    },
+            // { value: 'bank', label: '🏦 Bank Transfer'    },
           ].map(opt => (
             <button
               key={opt.value}
