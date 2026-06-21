@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import BottomNav from '@/components/BottomNav'
 import WhatsAppFloat from '@/components/WhatsAppFloat'
 import Footer from '@/components/Footer'
+import ChatWidget from '@/components/ChatWidget'
 
 // Change this to your real domain once you buy one.
 const BASE_URL = 'https://pcp-frontend.vercel.app'
@@ -13,14 +14,11 @@ export const metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
     default: 'Plant Center Peshawar — Plants, Pots & Gardening Essentials',
-    template: '%s | Plant Center Peshawar', // every page title becomes "Page Name | Plant Center Peshawar"
+    template: '%s | Plant Center Peshawar',
   },
   description: 'Peshawar\'s trusted plant store. Shop indoor plants, decorative pots, organic fertilizers, and gardening tools with fast local delivery across Peshawar.',
   keywords: ['plant center peshawar', 'plants peshawar', 'pots peshawar', 'gardening peshawar', 'indoor plants pakistan', 'buy plants online peshawar'],
   authors: [{ name: 'Plant Center Peshawar' }],
-  // icons: {
-  //   icon: '/icon.svg',
-  // },
   openGraph: {
     title: 'Plant Center Peshawar — Plants, Pots & Gardening Essentials',
     description: 'Peshawar\'s trusted plant store. Shop indoor plants, decorative pots, organic fertilizers, and gardening tools with fast local delivery.',
@@ -46,6 +44,7 @@ export default function RootLayout({ children }) {
           <Footer />
           <BottomNav />
           <WhatsAppFloat />
+          <ChatWidget />
           <Toaster position="top-center" toastOptions={{ duration: 2000 }} />
         </CartProvider>
       </body>

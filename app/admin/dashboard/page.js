@@ -29,6 +29,8 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [productForm, setProductForm]       = useState(EMPTY_PRODUCT)
   const [saving, setSaving]                 = useState(false)
+  const [orderSearch, setOrderSearch]       = useState('')
+  const [productSearch, setProductSearch]   = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('pcp_token')
@@ -133,7 +135,19 @@ export default function AdminDashboard() {
   const pending   = orders.filter(o => o.status === 'Pending').length
   const delivered = orders.filter(o => o.status === 'Delivered').length
   const revenue   = orders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.total), 0)
-  const filteredOrders = orderFilter === 'All' ? orders : orders.filter(o => o.status === orderFilter)
+  const filteredOrders = orders
+    .filter(o => orderFilter === 'All' || o.status === orderFilter)
+    .filter(o => {
+      if (!orderSearch.trim()) return true
+      const q = orderSearch.toLowerCase()
+      return o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.includes(q)
+    })
+
+  const filteredProducts = products.filter(p => {
+    if (!productSearch.trim()) return true
+    const q = productSearch.toLowerCase()
+    return p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
+  })
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row pt-14 lg:pt-16">
@@ -267,6 +281,22 @@ export default function AdminDashboard() {
                   <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Orders ({orders.length})</h1>
                 </div>
 
+                {/* Search */}
+                <div className="relative mb-4 max-w-sm">
+                  <input
+                    value={orderSearch}
+                    onChange={e => setOrderSearch(e.target.value)}
+                    placeholder="Search by customer name or phone..."
+                    className="w-full border border-gray-200 rounded-full pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary bg-white"
+                  />
+                  <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+
+                {/* Filter */}
+                {/* <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar pb-1"></div> */}
+
                 {/* Filter */}
                 <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar pb-1">
                   {['All', 'Pending', 'Confirmed', 'Delivered', 'Cancelled'].map(f => (
@@ -286,7 +316,9 @@ export default function AdminDashboard() {
 
                 <div className="flex flex-col gap-3">
                   {filteredOrders.length === 0 && (
-                    <div className="text-center py-16 text-gray-400">No {orderFilter !== 'All' ? orderFilter.toLowerCase() : ''} orders</div>
+                    <div className="text-center py-16 text-gray-400">
+                      No {orderFilter !== 'All' ? orderFilter.toLowerCase() : ''} orders{orderSearch ? ` matching "${orderSearch}"` : ''}
+                    </div>
                   )}
                   {filteredOrders.map(order => (
                     <div key={order.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -401,6 +433,19 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
+                {/* Search */}
+                <div className="relative mb-5 max-w-sm">
+                  <input
+                    value={productSearch}
+                    onChange={e => setProductSearch(e.target.value)}
+                    placeholder="Search by product name or category..."
+                    className="w-full border border-gray-200 rounded-full pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary bg-white"
+                  />
+                  <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+
                 {/* Products table */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="overflow-x-auto">
@@ -413,7 +458,14 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
-                        {products.map(p => (
+                        {filteredProducts.length === 0 && (
+                          <tr>
+                            <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+                              No products matching "{productSearch}"
+                            </td>
+                          </tr>
+                        )}
+                        {filteredProducts.map(p => (
                           <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-4 py-3">
                               <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden">
