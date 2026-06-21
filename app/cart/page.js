@@ -147,27 +147,13 @@ export default function CartPage() {
       </div>
 
       {/* Payment */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm mb-5">
-        <h2 className="font-bold text-gray-800 mb-3">Payment Method</h2>
-        <div className="flex gap-3">
-          {[
-            { value: 'cod',  label: '💵 Cash on Delivery' },
-            // { value: 'bank', label: '🏦 Bank Transfer'    },
-          ].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setPayment(opt.value)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-colors ${
-                payment === opt.value
-                  ? 'border-primary bg-green-50 text-primary-dark'
-                  : 'border-gray-200 text-gray-600'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      
+<div className="bg-white rounded-2xl p-4 shadow-sm mb-5">
+  <h2 className="font-bold text-gray-800 mb-3">Payment Method</h2>
+  <div className="flex items-center gap-2 py-2.5 px-4 rounded-xl border-2 border-primary bg-green-50 text-primary-dark text-sm font-semibold">
+    💵 Cash on Delivery
+  </div>
+</div>
 
       {/* Place order */}
       <button
