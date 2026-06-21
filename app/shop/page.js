@@ -2,6 +2,11 @@ import { Suspense } from 'react'
 import { getProducts } from '@/lib/api'
 import ShopClient from './ShopClient'
 
+export const metadata = {
+  title: 'Shop All Products',
+  description: 'Browse our full collection of plants, pots, fertilizers, and gardening tools. Fast delivery across Peshawar.',
+}
+
 export default async function ShopPage() {
   let products = []
   try { products = await getProducts() } catch (e) {}
