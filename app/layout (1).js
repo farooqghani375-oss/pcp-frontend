@@ -18,9 +18,9 @@ export const metadata = {
   description: 'Peshawar\'s trusted plant store. Shop indoor plants, decorative pots, organic fertilizers, and gardening tools with fast local delivery across Peshawar.',
   keywords: ['plant center peshawar', 'plants peshawar', 'pots peshawar', 'gardening peshawar', 'indoor plants pakistan', 'buy plants online peshawar'],
   authors: [{ name: 'Plant Center Peshawar' }],
-  icons: {
-    icon: '/icon.svg',
-  },
+  // icons: {
+  //   icon: '/icon.svg',
+  // },
   openGraph: {
     title: 'Plant Center Peshawar — Plants, Pots & Gardening Essentials',
     description: 'Peshawar\'s trusted plant store. Shop indoor plants, decorative pots, organic fertilizers, and gardening tools with fast local delivery.',
