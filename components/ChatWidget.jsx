@@ -49,7 +49,7 @@ export default function ChatWidget() {
           className="fixed right-4 bottom-24 z-40 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
           aria-label="Chat with us"
         >
-          <span className="text-white text-2xl leading-none">💬</span>
+          <span className="text-white text-2xl leading-none">🤖</span>
         </button>
       )}
 
