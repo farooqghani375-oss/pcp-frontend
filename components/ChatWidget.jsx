@@ -42,11 +42,14 @@ export default function ChatWidget() {
   return (
     <>
       {/* Floating toggle button — only shown when the panel is closed.
-          Sits above the WhatsApp button (which is at bottom-6). */}
+          WhatsApp button sits at bottom-14 (56px) and is 48px tall (h-12),
+          so its top edge is at 104px. This button sits at 116px, giving a
+          clean, deliberate 12px gap between the two — no overlap, no
+          awkward closeness. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed right-4 bottom-24 z-40 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+          className="fixed right-4 bottom-[116px] z-40 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
           aria-label="Chat with us"
         >
           <span className="text-white text-2xl leading-none">🤖</span>
@@ -54,14 +57,15 @@ export default function ChatWidget() {
       )}
 
       {/* Chat panel.
-          bottom-24 keeps it clear of the WhatsApp button below.
-          Height is capped by BOTH a max size (28rem) AND the available
-          viewport space, so it can never render above the top of the screen
-          no matter how short the browser window is. */}
+          Same bottom-[116px] offset as the toggle button, keeping that
+          same clean 12px gap above the WhatsApp button. Height is capped
+          by BOTH a max size (28rem) AND the available viewport space, so
+          it can never render above the top of the screen no matter how
+          short the browser window is. */}
       {open && (
         <div
-          className="fixed right-4 bottom-24 z-40 w-[calc(100vw-2rem)] max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
-          style={{ height: 'min(28rem, calc(100vh - 12rem))' }}
+          className="fixed right-4 bottom-[116px] z-40 w-[calc(100vw-2rem)] max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
+          style={{ height: 'min(28rem, calc(100vh - 13rem))' }}
         >
           {/* Header */}
           <div className="bg-primary-dark text-white px-4 py-3 flex items-center gap-2 flex-shrink-0">

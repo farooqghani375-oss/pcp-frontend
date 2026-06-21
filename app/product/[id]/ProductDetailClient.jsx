@@ -163,7 +163,7 @@ export default function ProductDetailClient({ product }) {
           {/* Delivery info */}
           <div className="mt-6 bg-green-50 rounded-2xl p-4 flex flex-col gap-2">
             {[
-              { icon: '🚚', text: 'Free delivery on orders above Rs 2,000' },
+              // { icon: '🚚', text: 'Free delivery on orders above Rs 2,000' },
               { icon: '🔄', text: 'Easy returns within 7 days'             },
               { icon: '💬', text: 'WhatsApp support available anytime'     },
             ].map(item => (
