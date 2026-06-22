@@ -114,7 +114,7 @@ export default function Navbar() {
                   highlighted === i ? 'bg-green-50' : 'hover:bg-gray-50'
                 }`}
               >
-                <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                   {p.images?.[0] ? (
                     <img src={p.images[0]} alt="" className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none' }} />
                   ) : (
@@ -122,10 +122,10 @@ export default function Navbar() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
-                  <p className="text-xs text-gray-400 capitalize">{p.category}</p>
+                  <p className="text-xs font-medium text-gray-800 truncate">{p.name}</p>
+                  <p className="text-[10px] text-gray-400 capitalize">{p.category}</p>
                 </div>
-                <p className="text-sm font-semibold text-primary-dark flex-shrink-0">Rs {Number(p.price).toLocaleString()}</p>
+                <p className="text-xs font-semibold text-primary-dark flex-shrink-0">Rs {Number(p.price).toLocaleString()}</p>
               </button>
             ))}
             {/* "See all results" footer */}
