@@ -116,7 +116,7 @@ export default function Navbar() {
               >
                 <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                   {p.images?.[0] ? (
-                    <img src={`/images/${p.images[0]}`} alt="" className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none' }} />
+                    <img src={p.images[0]} alt="" className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none' }} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-lg">🌿</div>
                   )}
