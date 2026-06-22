@@ -8,7 +8,7 @@ export default function ProductCard({ product }) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-      <Link href={`/product/${product.id}`} className="block relative">
+      <Link href={`/product/${product.slug}`} className="block relative">
         <div className="aspect-square bg-gray-100 overflow-hidden">
           {image ? (
             <img
@@ -30,7 +30,7 @@ export default function ProductCard({ product }) {
 
       <div className="p-3 lg:p-4 flex flex-col gap-1 flex-1">
         <p className="text-[10px] lg:text-xs text-primary font-semibold uppercase tracking-wide">{product.category}</p>
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/product/${product.slug}`}>
           <p className="text-sm lg:text-base font-semibold text-gray-800 leading-tight line-clamp-2 hover:text-primary transition-colors">
             {product.name}
           </p>

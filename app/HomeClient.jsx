@@ -247,7 +247,7 @@ function MarqueeCard({ product, onAdd }) {
   const image = product.images?.[0]
   return (
     <div className="flex-shrink-0 w-36 lg:w-52 bg-white rounded-2xl shadow-sm overflow-hidden">
-      <Link href={`/product/${product.id}`} className="block">
+      <Link href={`/product/${product.slug}`} className="block">
         <div className="h-32 lg:h-44 bg-gray-100 overflow-hidden">
           {image ? (
             <img
@@ -278,7 +278,7 @@ function FeaturedCard({ product, onAdd }) {
   const image = product.images?.[0]
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-      <Link href={`/product/${product.id}`} className="block relative">
+      <Link href={`/product/${product.slug}`} className="block relative">
         <div className="aspect-square bg-gray-100 overflow-hidden">
           {image ? (
             <img
@@ -299,7 +299,7 @@ function FeaturedCard({ product, onAdd }) {
       </Link>
       <div className="p-2.5 lg:p-4 flex flex-col gap-1 flex-1">
         <p className="text-[10px] lg:text-xs text-primary font-semibold uppercase tracking-wide">{product.category}</p>
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/product/${product.slug}`}>
           <p className="text-sm lg:text-base font-semibold text-gray-800 leading-tight line-clamp-2 hover:text-primary transition-colors">
             {product.name}
           </p>
