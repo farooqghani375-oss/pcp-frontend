@@ -1,4 +1,4 @@
-'use client'
+git add 'use client'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import { useState, useEffect } from 'react'

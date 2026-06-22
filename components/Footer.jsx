@@ -94,6 +94,7 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <span>📞</span>
                 <span>+92 319 9004866</span>
+                <span>+92 335 9004866</span>
               </li>
               <li className="flex items-center gap-2">
                 <span>🕐</span>
