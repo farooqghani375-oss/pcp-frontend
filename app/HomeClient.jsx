@@ -251,7 +251,7 @@ function MarqueeCard({ product, onAdd }) {
         <div className="h-32 lg:h-44 bg-gray-100 overflow-hidden">
           {image ? (
             <img
-              src={`/images/${image}`}
+              src={image}
               alt={product.name}
               className="w-full h-full object-cover hover:scale-105 transition-transform"
               onError={e => { e.target.style.display = 'none' }}
@@ -282,7 +282,7 @@ function FeaturedCard({ product, onAdd }) {
         <div className="aspect-square bg-gray-100 overflow-hidden">
           {image ? (
             <img
-              src={`/images/${image}`}
+              src={image}
               alt={product.name}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               onError={e => { e.target.style.display = 'none' }}

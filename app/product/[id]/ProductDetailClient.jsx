@@ -35,7 +35,7 @@ export default function ProductDetailClient({ product }) {
           <div className="rounded-2xl lg:rounded-2xl border border-r-4 overflow-hidden bg-white h-72 lg:h-[320px]">
             {images[imgIdx] ? (
               <img
-                src={`/images/${images[imgIdx]}`}
+                src={images[imgIdx]}
                 alt={product.name}
                 className="block w-full h-full object-contain object-center"
                 onError={e => { e.target.style.display = 'none' }}
@@ -57,7 +57,7 @@ export default function ProductDetailClient({ product }) {
                   }`}
                 >
                   <img
-                    src={`/images/${img}`}
+                    src={img}
                     alt=""
                     className="w-full h-full object-cover"
                     onError={e => { e.target.style.display = 'none' }}

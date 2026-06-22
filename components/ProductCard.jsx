@@ -12,7 +12,7 @@ export default function ProductCard({ product }) {
         <div className="aspect-square bg-gray-100 overflow-hidden">
           {image ? (
             <img
-              src={`/images/${image}`}
+              src={image}
               alt={product.name}
               className="w-full h-full object-contain object-center hover:scale-105 transition-transform duration-300"
               onError={e => { e.target.style.display = 'none' }}

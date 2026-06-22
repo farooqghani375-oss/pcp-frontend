@@ -77,7 +77,7 @@ export default function CartPage() {
           <div key={`${item.id}-${item.selectedColor}`} className="bg-white rounded-2xl p-3 flex gap-3 shadow-sm">
             <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
               {item.images?.[0] ? (
-                <img src={`/images/${item.images[0]}`} alt={item.name} className="w-full h-full object-cover" />
+                <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-2xl">🌿</div>
               )}

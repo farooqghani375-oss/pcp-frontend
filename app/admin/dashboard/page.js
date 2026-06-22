@@ -29,6 +29,8 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState(null)
   const [productForm, setProductForm]       = useState(EMPTY_PRODUCT)
   const [saving, setSaving]                 = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imagePreview, setImagePreview] = useState([])
   const [orderSearch, setOrderSearch]       = useState('')
   const [productSearch, setProductSearch]   = useState('')
 
@@ -76,6 +78,7 @@ export default function AdminDashboard() {
 
   function openEdit(product) {
     setEditingProduct(product.id)
+    setImagePreview([])
     setProductForm({
       name: product.name,
       price: product.price,
@@ -91,10 +94,11 @@ export default function AdminDashboard() {
   }
 
   function openAdd() {
-    setEditingProduct(null)
-    setProductForm(EMPTY_PRODUCT)
-    setShowAddProduct(true)
-  }
+  setEditingProduct(null)
+  setProductForm(EMPTY_PRODUCT)
+  setImagePreview([])
+  setShowAddProduct(true)
+}
 
   async function handleSaveProduct(e) {
     e.preventDefault()
@@ -125,6 +129,44 @@ export default function AdminDashboard() {
     } catch { toast.error('Failed to save product') }
     finally { setSaving(false) }
   }
+
+async function handleImageUpload(e) {
+  const files = Array.from(e.target.files)
+  if (!files.length) return
+  setUploadingImage(true)
+  try {
+    const urls = []
+    for (const file of files) {
+      const formData = new FormData()
+      formData.append('image', file)
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/upload-image`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('pcp_token')}`,
+          },
+          body: formData,
+        }
+      )
+      const data = await res.json()
+      if (data.url) urls.push(data.url)
+    }
+    setProductForm(f => ({
+      ...f,
+      images: [
+        ...(f.images ? f.images.split(',').map(s => s.trim()).filter(Boolean) : []),
+        ...urls
+      ].join(', ')
+    }))
+    setImagePreview(prev => [...prev, ...urls])
+    toast.success(`${urls.length} image(s) uploaded!`)
+  } catch {
+    toast.error('Image upload failed')
+  } finally {
+    setUploadingImage(false)
+  }
+}
 
   function logout() {
     localStorage.removeItem('pcp_token')
@@ -385,7 +427,7 @@ export default function AdminDashboard() {
                                   <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                                       {item.product_id && products.find(p => p.id === item.product_id)?.images?.[0] ? (
-                                        <img src={`/images/${products.find(p => p.id === item.product_id).images[0]}`} alt="" className="w-full h-full object-cover" />
+                                        <img src={products.find(p => p.id === item.product_id).images[0]} alt="" className="w-full h-full object-cover" />
                                       ) : (
                                         <div className="w-full h-full flex items-center justify-center text-lg">🌿</div>
                                       )}
@@ -470,7 +512,7 @@ export default function AdminDashboard() {
                             <td className="px-4 py-3">
                               <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden">
                                 {p.images?.[0] ? (
-                                  <img src={`/images/${p.images[0]}`} alt={p.name} className="w-full h-full object-cover" />
+                                  <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-xl">🌿</div>
                                 )}
@@ -579,17 +621,41 @@ export default function AdminDashboard() {
               </div>
 
               {/* Images */}
-              <div>
-                <label className="text-xs font-semibold text-gray-600 mb-1 block">Image filenames</label>
-                <input
-                  value={productForm.images}
-                  onChange={e => setProductForm(f => ({ ...f, images: e.target.value }))}
-                  placeholder="27.jpeg, 12.webp (comma separated)"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
-                <p className="text-[10px] text-gray-400 mt-1">Enter filenames from your public/images/ folder</p>
-              </div>
-
+              {/* Images */}
+<div>
+  <label className="text-xs font-semibold text-gray-600 mb-1 block">
+    Product Images
+  </label>
+  <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl px-3 py-4 cursor-pointer hover:border-primary transition-colors ${uploadingImage ? 'opacity-50' : ''}`}>
+    <input
+      type="file"
+      accept="image/*"
+      multiple
+      onChange={handleImageUpload}
+      disabled={uploadingImage}
+      className="hidden"
+    />
+    <span className="text-2xl">📸</span>
+    <span className="text-sm text-gray-500">
+      {uploadingImage ? 'Uploading to Cloudinary...' : 'Click to upload images'}
+    </span>
+  </label>
+  {imagePreview.length > 0 && (
+    <div className="flex gap-2 mt-2 flex-wrap">
+      {imagePreview.map((url, i) => (
+        <img
+          key={i}
+          src={url}
+          alt=""
+          className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+        />
+      ))}
+    </div>
+  )}
+  <p className="text-[10px] text-gray-400 mt-1">
+    Images upload directly to Cloudinary
+  </p>
+</div>
               {/* Colors */}
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">Colors (hex)</label>

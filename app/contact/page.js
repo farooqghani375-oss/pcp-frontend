@@ -45,7 +45,7 @@ export default function ContactPage() {
             <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-6">Find Us</h2>
             <div className="flex flex-col gap-5">
               {[
-                { icon: '📍', title: 'Address',  value: 'University Road, Peshawar, KPK, Pakistan'                        },
+                { icon: '📍', title: 'Address',  value: 'Tarnab Farm, Peshawar, KPK, Pakistan'                        },
                 { icon: '📞', title: 'Phone',    value: '92 319 9004866'                                                 },
                 { icon: '💬', title: 'WhatsApp', value: '92 319 9004866'                                                 },
                 { icon: '🕐', title: 'Hours',    value: 'Mon–Sat: 9am – 8pm\nSunday: 10am – 6pm'                         },
