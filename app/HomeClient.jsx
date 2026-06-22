@@ -93,14 +93,9 @@ export default function HomeClient({ products, marqueeProducts }) {
               <img
                 src={`/images/${s.image}`}
                 alt=""
-                className="absolute inset-0 min-w-full min-h-full w-full h-full object-cover object-center opacity-70 brightness-75"
+                className="absolute inset-0 min-w-full min-h-full w-full h-full object-cover object-center"
               />
             )}
-            <div className="absolute inset-0 bg-black/25" />
-            {/* Decorative circles */}
-            <div className="absolute -right-8 -top-8 w-40 h-40 lg:w-96 lg:h-96 rounded-full bg-white opacity-5" />
-            <div className="absolute right-20 top-10 w-24 h-24 lg:w-64 lg:h-64 rounded-full bg-white opacity-5" />
-            <div className="absolute right-4 -bottom-6 w-20 h-20 lg:w-48 lg:h-48 rounded-full bg-white opacity-5" />
 
             {/* Text content */}
             <div className="relative z-10 h-full flex flex-col justify-center px-6 lg:px-16 max-w-7xl mx-auto">
