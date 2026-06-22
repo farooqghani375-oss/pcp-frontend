@@ -46,7 +46,7 @@ export default function ContactPage() {
             <div className="flex flex-col gap-5">
               {[
                 { icon: '📍', title: 'Address',  value: 'Tarnab Farm, Peshawar, KPK, Pakistan'                        },
-                { icon: '📞', title: 'Phone',    value: '92 319 9004866'                                                 },
+                { icon: '📞', title: 'Phone',    value: '0335 9208341'                                                 },
                 { icon: '💬', title: 'WhatsApp', value: '92 319 9004866'                                                 },
                 { icon: '🕐', title: 'Hours',    value: 'Mon–Sat: 9am – 8pm\nSunday: 10am – 6pm'                         },
               ].map(item => (
