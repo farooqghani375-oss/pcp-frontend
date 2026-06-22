@@ -68,7 +68,7 @@ export default function Navbar() {
   }
 
   function goToProduct(product) {
-    router.push(`/product/${product.id}`)
+    router.push(`/product/${product.slug}`)
     setShowSuggestions(false)
     setShowSearch(false)
     setSearch('')
