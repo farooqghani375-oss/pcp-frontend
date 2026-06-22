@@ -6,6 +6,7 @@ import BottomNav from '@/components/BottomNav'
 import WhatsAppFloat from '@/components/WhatsAppFloat'
 import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
+import WakeUpBackend from '@/components/WakeUpBackend'
 
 // Change this to your real domain once you buy one.
 const BASE_URL = 'https://pcp-frontend.vercel.app'
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
           <WhatsAppFloat />
           <ChatWidget />
           <Toaster position="top-center" toastOptions={{ duration: 2000 }} />
+          <WakeUpBackend />
         </CartProvider>
       </body>
     </html>
