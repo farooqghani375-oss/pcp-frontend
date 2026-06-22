@@ -193,17 +193,17 @@ export default function Navbar() {
         <div className="flex items-center gap-3 ml-3">
           {/* Mobile search toggle */}
           {showSearch ? (
-            <div ref={searchRef} className="relative lg:hidden">
+            <div ref={searchRef} className="relative lg:hidden w-full">
               <div className="flex items-center gap-1">
-                <input
-                  autoFocus
-                  value={search}
-                  onChange={e => { setSearch(e.target.value); setShowSuggestions(true) }}
-                  onFocus={() => setShowSuggestions(true)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Search..."
-                  className="border border-gray-300 rounded-full px-3 py-1 text-sm w-32 outline-none focus:border-primary"
-                />
+              <input
+  autoFocus
+  value={search}
+  onChange={e => { setSearch(e.target.value); setShowSuggestions(true) }}
+  onFocus={() => setShowSuggestions(true)}
+  onKeyDown={handleKeyDown}
+  placeholder="Search plants, pots..."
+  className="border border-gray-200 rounded-full px-4 py-2 text-sm w-52 outline-none focus:border-primary bg-gray-50"
+/>
                 <button type="button" onClick={() => { setShowSearch(false); setShowSuggestions(false) }} className="text-gray-400 text-lg">✕</button>
               </div>
               <SuggestionsDropdown />
