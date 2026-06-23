@@ -14,7 +14,9 @@ const STATUS_COLORS = {
 const EMPTY_PRODUCT = {
   name: '', price: '', category: 'plants', description: '',
   featured: false, inStock: true, stockQty: 0,
-  images: '', colors: ''
+  images: '',
+  colors: [],   // now array of { hex, stock_qty, image_url }
+  sizes: [],    // array of { size_label, unit }
 }
 
 export default function AdminDashboard() {
@@ -30,6 +32,7 @@ export default function AdminDashboard() {
   const [productForm, setProductForm]       = useState(EMPTY_PRODUCT)
   const [saving, setSaving]                 = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadingColorImage, setUploadingColorImage] = useState(null) // index of color being uploaded
   const [imagePreview, setImagePreview] = useState([])
   const [orderSearch, setOrderSearch]       = useState('')
   const [productSearch, setProductSearch]   = useState('')
@@ -78,7 +81,7 @@ export default function AdminDashboard() {
 
   function openEdit(product) {
     setEditingProduct(product.id)
-    setImagePreview([])
+    setImagePreview(product.images || [])
     setProductForm({
       name: product.name,
       price: product.price,
@@ -88,17 +91,91 @@ export default function AdminDashboard() {
       inStock: product.in_stock,
       stockQty: product.stock_qty,
       images: product.images?.join(', ') || '',
-      colors: product.colors?.join(', ') || '',
+      // colors now come as objects: { hex_color, stock_qty, image_url }
+      colors: (product.colors || []).map(c => ({
+        hex: c.hex_color || c,
+        stock_qty: c.stock_qty || 0,
+        image_url: c.image_url || '',
+      })),
+      sizes: (product.sizes || []).map(s => ({
+        size_label: s.size_label,
+        unit: s.unit,
+      })),
     })
     setShowAddProduct(true)
   }
 
   function openAdd() {
-  setEditingProduct(null)
-  setProductForm(EMPTY_PRODUCT)
-  setImagePreview([])
-  setShowAddProduct(true)
-}
+    setEditingProduct(null)
+    setProductForm(EMPTY_PRODUCT)
+    setImagePreview([])
+    setShowAddProduct(true)
+  }
+
+  // ── Color helpers ──
+  function addColor() {
+    setProductForm(f => ({
+      ...f,
+      colors: [...f.colors, { hex: '#22c55e', stock_qty: 0, image_url: '' }]
+    }))
+  }
+
+  function removeColor(i) {
+    setProductForm(f => ({ ...f, colors: f.colors.filter((_, idx) => idx !== i) }))
+  }
+
+  function updateColor(i, field, value) {
+    setProductForm(f => ({
+      ...f,
+      colors: f.colors.map((c, idx) => idx === i ? { ...c, [field]: value } : c)
+    }))
+  }
+
+  async function handleColorImageUpload(e, colorIndex) {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploadingColorImage(colorIndex)
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/upload-image`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${localStorage.getItem('pcp_token')}` },
+          body: formData,
+        }
+      )
+      const data = await res.json()
+      if (data.url) {
+        updateColor(colorIndex, 'image_url', data.url)
+        toast.success('Color image uploaded!')
+      }
+    } catch {
+      toast.error('Color image upload failed')
+    } finally {
+      setUploadingColorImage(null)
+    }
+  }
+
+  // ── Size helpers ──
+  function addSize() {
+    setProductForm(f => ({
+      ...f,
+      sizes: [...f.sizes, { size_label: '', unit: 'inches' }]
+    }))
+  }
+
+  function removeSize(i) {
+    setProductForm(f => ({ ...f, sizes: f.sizes.filter((_, idx) => idx !== i) }))
+  }
+
+  function updateSize(i, field, value) {
+    setProductForm(f => ({
+      ...f,
+      sizes: f.sizes.map((s, idx) => idx === i ? { ...s, [field]: value } : s)
+    }))
+  }
 
   async function handleSaveProduct(e) {
     e.preventDefault()
@@ -113,7 +190,12 @@ export default function AdminDashboard() {
         price: Number(productForm.price),
         stockQty: Number(productForm.stockQty),
         images: productForm.images ? productForm.images.split(',').map(s => s.trim()).filter(Boolean) : [],
-        colors: productForm.colors ? productForm.colors.split(',').map(s => s.trim()).filter(Boolean) : [],
+        colors: productForm.colors.map(c => ({
+          hex: c.hex,
+          stock_qty: Number(c.stock_qty) || 0,
+          image_url: c.image_url || null,
+        })),
+        sizes: productForm.sizes.filter(s => s.size_label.trim()),
       }
       if (editingProduct) {
         const updated = await updateProduct(editingProduct, data)
@@ -130,43 +212,41 @@ export default function AdminDashboard() {
     finally { setSaving(false) }
   }
 
-async function handleImageUpload(e) {
-  const files = Array.from(e.target.files)
-  if (!files.length) return
-  setUploadingImage(true)
-  try {
-    const urls = []
-    for (const file of files) {
-      const formData = new FormData()
-      formData.append('image', file)
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/products/upload-image`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('pcp_token')}`,
-          },
-          body: formData,
-        }
-      )
-      const data = await res.json()
-      if (data.url) urls.push(data.url)
+  async function handleImageUpload(e) {
+    const files = Array.from(e.target.files)
+    if (!files.length) return
+    setUploadingImage(true)
+    try {
+      const urls = []
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append('image', file)
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/products/upload-image`,
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${localStorage.getItem('pcp_token')}` },
+            body: formData,
+          }
+        )
+        const data = await res.json()
+        if (data.url) urls.push(data.url)
+      }
+      setProductForm(f => ({
+        ...f,
+        images: [
+          ...(f.images ? f.images.split(',').map(s => s.trim()).filter(Boolean) : []),
+          ...urls
+        ].join(', ')
+      }))
+      setImagePreview(prev => [...prev, ...urls])
+      toast.success(`${urls.length} image(s) uploaded!`)
+    } catch {
+      toast.error('Image upload failed')
+    } finally {
+      setUploadingImage(false)
     }
-    setProductForm(f => ({
-      ...f,
-      images: [
-        ...(f.images ? f.images.split(',').map(s => s.trim()).filter(Boolean) : []),
-        ...urls
-      ].join(', ')
-    }))
-    setImagePreview(prev => [...prev, ...urls])
-    toast.success(`${urls.length} image(s) uploaded!`)
-  } catch {
-    toast.error('Image upload failed')
-  } finally {
-    setUploadingImage(false)
   }
-}
 
   function logout() {
     localStorage.removeItem('pcp_token')
@@ -253,14 +333,11 @@ async function handleImageUpload(e) {
             </div>
           </div>
         ) : (
-
           <>
             {/* ── DASHBOARD TAB ── */}
             {tab === 'dashboard' && (
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
-
-                {/* Stats grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4 mb-8">
                   {[
                     { label: 'Total Orders', value: orders.length,    icon: '📦', color: 'border-l-blue-400'   },
@@ -276,8 +353,6 @@ async function handleImageUpload(e) {
                     </div>
                   ))}
                 </div>
-
-                {/* Recent orders */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                     <h2 className="font-bold text-gray-800">Recent Orders</h2>
@@ -322,8 +397,6 @@ async function handleImageUpload(e) {
                 <div className="flex items-center justify-between mb-5">
                   <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Orders ({orders.length})</h1>
                 </div>
-
-                {/* Search */}
                 <div className="relative mb-4 max-w-sm">
                   <input
                     value={orderSearch}
@@ -335,27 +408,19 @@ async function handleImageUpload(e) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-
-                {/* Filter */}
-                {/* <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar pb-1"></div> */}
-
-                {/* Filter */}
                 <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar pb-1">
                   {['All', 'Pending', 'Confirmed', 'Delivered', 'Cancelled'].map(f => (
                     <button
                       key={f}
                       onClick={() => setOrderFilter(f)}
                       className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                        orderFilter === f
-                          ? 'bg-primary text-white'
-                          : 'bg-white text-gray-600 border border-gray-200 hover:border-primary'
+                        orderFilter === f ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-primary'
                       }`}
                     >
                       {f} {f !== 'All' && `(${orders.filter(o => o.status === f).length})`}
                     </button>
                   ))}
                 </div>
-
                 <div className="flex flex-col gap-3">
                   {filteredOrders.length === 0 && (
                     <div className="text-center py-16 text-gray-400">
@@ -364,7 +429,6 @@ async function handleImageUpload(e) {
                   )}
                   {filteredOrders.map(order => (
                     <div key={order.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                      {/* Order header — always visible */}
                       <button
                         onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
                         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
@@ -383,8 +447,6 @@ async function handleImageUpload(e) {
                           <span className="text-gray-400 text-sm">{expandedOrder === order.id ? '▲' : '▼'}</span>
                         </div>
                       </button>
-
-                      {/* Expanded detail */}
                       {expandedOrder === order.id && (
                         <div className="border-t border-gray-100 px-5 py-4">
                           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -417,8 +479,6 @@ async function handleImageUpload(e) {
                               </select>
                             </div>
                           </div>
-
-                          {/* Items */}
                           <div className="border-t border-gray-100 pt-3 mb-3">
                             <p className="text-[10px] text-primary font-bold uppercase tracking-wide mb-2">Items</p>
                             <div className="flex flex-col gap-2">
@@ -439,8 +499,6 @@ async function handleImageUpload(e) {
                               ))}
                             </div>
                           </div>
-
-                          {/* Totals + delete */}
                           <div className="flex items-end justify-between border-t border-gray-100 pt-3">
                             <div className="text-xs text-gray-500 space-y-0.5">
                               <p>Subtotal: Rs {Number(order.subtotal).toLocaleString()}</p>
@@ -474,8 +532,6 @@ async function handleImageUpload(e) {
                     + Add Product
                   </button>
                 </div>
-
-                {/* Search */}
                 <div className="relative mb-5 max-w-sm">
                   <input
                     value={productSearch}
@@ -487,14 +543,12 @@ async function handleImageUpload(e) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-
-                {/* Products table */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-primary-dark text-white">
                         <tr>
-                          {['Image', 'Name', 'Category', 'Price', 'Stock', 'Featured', 'Actions'].map(h => (
+                          {['Image', 'Name', 'Category', 'Price', 'Stock', 'Colors', 'Sizes', 'Featured', 'Actions'].map(h => (
                             <th key={h} className="px-4 py-3 text-left text-xs font-semibold">{h}</th>
                           ))}
                         </tr>
@@ -502,7 +556,7 @@ async function handleImageUpload(e) {
                       <tbody className="divide-y divide-gray-50">
                         {filteredProducts.length === 0 && (
                           <tr>
-                            <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+                            <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                               No products matching "{productSearch}"
                             </td>
                           </tr>
@@ -529,6 +583,33 @@ async function handleImageUpload(e) {
                               <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.in_stock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                                 {p.in_stock ? `✓ ${p.stock_qty}` : '✗ Out'}
                               </span>
+                            </td>
+                            {/* Colors with per-color stock */}
+                            <td className="px-4 py-3">
+                              <div className="flex gap-1 flex-wrap">
+                                {(p.colors || []).map((c, i) => (
+                                  <div key={i} className="flex flex-col items-center gap-0.5">
+                                    <div
+                                      className="w-5 h-5 rounded-full border border-gray-200"
+                                      style={{ backgroundColor: c.hex_color || c }}
+                                      title={`Stock: ${c.stock_qty ?? 0}`}
+                                    />
+                                    <span className="text-[9px] text-gray-400">{c.stock_qty ?? 0}</span>
+                                  </div>
+                                ))}
+                                {(!p.colors || p.colors.length === 0) && <span className="text-gray-300 text-xs">—</span>}
+                              </div>
+                            </td>
+                            {/* Sizes */}
+                            <td className="px-4 py-3">
+                              <div className="flex gap-1 flex-wrap">
+                                {(p.sizes || []).map((s, i) => (
+                                  <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                                    {s.size_label} {s.unit}
+                                  </span>
+                                ))}
+                                {(!p.sizes || p.sizes.length === 0) && <span className="text-gray-300 text-xs">—</span>}
+                              </div>
                             </td>
                             <td className="px-4 py-3 text-lg">{p.featured ? '⭐' : '—'}</td>
                             <td className="px-4 py-3">
@@ -571,6 +652,7 @@ async function handleImageUpload(e) {
             </div>
 
             <form onSubmit={handleSaveProduct} className="px-6 py-5 flex flex-col gap-4">
+
               {/* Name */}
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">Product Name *</label>
@@ -620,57 +702,161 @@ async function handleImageUpload(e) {
                 />
               </div>
 
-              {/* Images */}
-              {/* Images */}
-<div>
-  <label className="text-xs font-semibold text-gray-600 mb-1 block">
-    Product Images
-  </label>
-  <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl px-3 py-4 cursor-pointer hover:border-primary transition-colors ${uploadingImage ? 'opacity-50' : ''}`}>
-    <input
-      type="file"
-      accept="image/*"
-      multiple
-      onChange={handleImageUpload}
-      disabled={uploadingImage}
-      className="hidden"
-    />
-    <span className="text-2xl">📸</span>
-    <span className="text-sm text-gray-500">
-      {uploadingImage ? 'Uploading to Cloudinary...' : 'Click to upload images'}
-    </span>
-  </label>
-  {imagePreview.length > 0 && (
-    <div className="flex gap-2 mt-2 flex-wrap">
-      {imagePreview.map((url, i) => (
-        <img
-          key={i}
-          src={url}
-          alt=""
-          className="w-16 h-16 rounded-lg object-cover border border-gray-200"
-        />
-      ))}
-    </div>
-  )}
-  <p className="text-[10px] text-gray-400 mt-1">
-    Images upload directly to Cloudinary
-  </p>
-</div>
-              {/* Colors */}
+              {/* Product Images */}
               <div>
-                <label className="text-xs font-semibold text-gray-600 mb-1 block">Colors (hex)</label>
-                <input
-                  value={productForm.colors}
-                  onChange={e => setProductForm(f => ({ ...f, colors: e.target.value }))}
-                  placeholder="#c0392b, #2980b9 (comma separated)"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
-                />
+                <label className="text-xs font-semibold text-gray-600 mb-1 block">Product Images</label>
+                <label className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl px-3 py-4 cursor-pointer hover:border-primary transition-colors ${uploadingImage ? 'opacity-50' : ''}`}>
+                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} disabled={uploadingImage} className="hidden" />
+                  <span className="text-2xl">📸</span>
+                  <span className="text-sm text-gray-500">
+                    {uploadingImage ? 'Uploading to Cloudinary...' : 'Click to upload images'}
+                  </span>
+                </label>
+                {imagePreview.length > 0 && (
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {imagePreview.map((url, i) => (
+                      <img key={i} src={url} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* ── COLORS SECTION ── */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-gray-600">Colors & Stock per Color</label>
+                  <button
+                    type="button"
+                    onClick={addColor}
+                    className="text-xs font-semibold text-primary border border-primary px-3 py-1 rounded-lg hover:bg-green-50 transition-colors"
+                  >
+                    + Add Color
+                  </button>
+                </div>
+
+                {productForm.colors.length === 0 && (
+                  <p className="text-xs text-gray-400 italic">No colors added. Click "+ Add Color" to add one.</p>
+                )}
+
+                <div className="flex flex-col gap-3">
+                  {productForm.colors.map((color, i) => (
+                    <div key={i} className="border border-gray-200 rounded-xl p-3 flex flex-col gap-2">
+                      {/* Row 1: color picker + hex + stock + remove */}
+                      <div className="flex items-center gap-2">
+                        {/* Color picker */}
+                        <input
+                          type="color"
+                          value={color.hex}
+                          onChange={e => updateColor(i, 'hex', e.target.value)}
+                          className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                          title="Pick color"
+                        />
+                        {/* Hex input */}
+                        <input
+                          value={color.hex}
+                          onChange={e => updateColor(i, 'hex', e.target.value)}
+                          placeholder="#22c55e"
+                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-primary font-mono"
+                        />
+                        {/* Stock qty */}
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-gray-400">Qty</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={color.stock_qty}
+                            onChange={e => updateColor(i, 'stock_qty', e.target.value)}
+                            className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-primary"
+                          />
+                        </div>
+                        {/* Remove */}
+                        <button
+                          type="button"
+                          onClick={() => removeColor(i)}
+                          className="text-red-400 hover:text-red-600 text-lg leading-none"
+                          title="Remove color"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {/* Row 2: color image upload */}
+                      <div className="flex items-center gap-2">
+                        <label className={`flex items-center gap-1.5 cursor-pointer border border-dashed border-gray-200 rounded-lg px-3 py-1.5 hover:border-primary transition-colors text-xs text-gray-500 ${uploadingColorImage === i ? 'opacity-50' : ''}`}>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={e => handleColorImageUpload(e, i)}
+                            disabled={uploadingColorImage === i}
+                            className="hidden"
+                          />
+                          📷 {uploadingColorImage === i ? 'Uploading...' : 'Upload color image'}
+                        </label>
+                        {color.image_url && (
+                          <img src={color.image_url} alt="" className="w-8 h-8 rounded-lg object-cover border border-gray-200" />
+                        )}
+                        {!color.image_url && (
+                          <span className="text-[10px] text-gray-300">No image yet</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── SIZES SECTION ── */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-gray-600">Sizes (optional)</label>
+                  <button
+                    type="button"
+                    onClick={addSize}
+                    className="text-xs font-semibold text-primary border border-primary px-3 py-1 rounded-lg hover:bg-green-50 transition-colors"
+                  >
+                    + Add Size
+                  </button>
+                </div>
+
+                {productForm.sizes.length === 0 && (
+                  <p className="text-xs text-gray-400 italic">No sizes added. Leave empty if product has no sizes.</p>
+                )}
+
+                <div className="flex flex-col gap-2">
+                  {productForm.sizes.map((size, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      {/* Size value */}
+                      <input
+                        value={size.size_label}
+                        onChange={e => updateSize(i, 'size_label', e.target.value)}
+                        placeholder="e.g. 6"
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary"
+                      />
+                      {/* Unit dropdown */}
+                      <select
+                        value={size.unit}
+                        onChange={e => updateSize(i, 'unit', e.target.value)}
+                        className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary bg-white"
+                      >
+                        <option value="inches">inches</option>
+                        <option value="feet">feet</option>
+                      </select>
+                      {/* Remove */}
+                      <button
+                        type="button"
+                        onClick={() => removeSize(i)}
+                        className="text-red-400 hover:text-red-600 text-lg leading-none"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Stock + Featured */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Stock Quantity</label>
+                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Overall Stock Qty</label>
                   <input
                     type="number"
                     value={productForm.stockQty}

@@ -7,43 +7,58 @@ const CartContext = createContext(null)
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([])
 
-  // Load cart from localStorage on first render
   useEffect(() => {
     const saved = localStorage.getItem('pcp_cart')
     if (saved) setCart(JSON.parse(saved))
   }, [])
 
-  // Save to localStorage whenever cart changes
   useEffect(() => {
     localStorage.setItem('pcp_cart', JSON.stringify(cart))
   }, [cart])
 
-  function addToCart(product, quantity = 1, color = null) {
+  // size is an object { size_label, unit } or null
+  function addToCart(product, quantity = 1, color = null, size = null) {
     setCart(prev => {
-      const key = `${product.id}-${color}`
-      const existing = prev.find(i => `${i.id}-${i.selectedColor}` === key)
+      const sizeKey = size ? `${size.size_label}-${size.unit}` : 'none'
+      const key = `${product.id}-${color}-${sizeKey}`
+      const existing = prev.find(i => {
+        const iSizeKey = i.selectedSize ? `${i.selectedSize.size_label}-${i.selectedSize.unit}` : 'none'
+        return `${i.id}-${i.selectedColor}-${iSizeKey}` === key
+      })
       if (existing) {
         toast.success('Quantity updated!')
-        return prev.map(i =>
-          `${i.id}-${i.selectedColor}` === key
+        return prev.map(i => {
+          const iSizeKey = i.selectedSize ? `${i.selectedSize.size_label}-${i.selectedSize.unit}` : 'none'
+          return `${i.id}-${i.selectedColor}-${iSizeKey}` === key
             ? { ...i, quantity: i.quantity + quantity }
             : i
-        )
+        })
       }
       toast.success('Added to cart!')
-      return [...prev, { ...product, quantity, selectedColor: color }]
+      return [...prev, { ...product, quantity, selectedColor: color, selectedSize: size }]
     })
   }
 
-  function removeFromCart(id, color) {
-    setCart(prev => prev.filter(i => !(i.id === id && i.selectedColor === color)))
+  function removeFromCart(id, color, size = null) {
+    setCart(prev => prev.filter(i => {
+      const sameId    = i.id === id
+      const sameColor = i.selectedColor === color
+      const sizeKey   = size ? `${size.size_label}-${size.unit}` : 'none'
+      const iSizeKey  = i.selectedSize ? `${i.selectedSize.size_label}-${i.selectedSize.unit}` : 'none'
+      const sameSize  = iSizeKey === sizeKey
+      return !(sameId && sameColor && sameSize)
+    }))
   }
 
-  function updateQuantity(id, color, qty) {
-    if (qty < 1) { removeFromCart(id, color); return }
-    setCart(prev =>
-      prev.map(i => i.id === id && i.selectedColor === color ? { ...i, quantity: qty } : i)
-    )
+  function updateQuantity(id, color, qty, size = null) {
+    if (qty < 1) { removeFromCart(id, color, size); return }
+    setCart(prev => prev.map(i => {
+      const sizeKey  = size ? `${size.size_label}-${size.unit}` : 'none'
+      const iSizeKey = i.selectedSize ? `${i.selectedSize.size_label}-${i.selectedSize.unit}` : 'none'
+      return i.id === id && i.selectedColor === color && iSizeKey === sizeKey
+        ? { ...i, quantity: qty }
+        : i
+    }))
   }
 
   function clearCart() { setCart([]) }

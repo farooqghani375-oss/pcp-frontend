@@ -13,7 +13,7 @@ const SLIDES = [
     // tag: '🌿 Peshawar\'s #1 Plant Store',
     // title: 'Redesign Your Home\nWith Nature',
     // sub: 'Your source for every plant, pot, and tool for any space.',
-    btn: 'Shop Collections',
+    // btn: 'Shop Collections',
     href: '/shop',
   },
   {
@@ -22,7 +22,7 @@ const SLIDES = [
     // tag: '🪴 New Arrivals',
     // title: 'Fresh Plants\nJust Arrived',
     // sub: 'Over 200 varieties — from succulents to statement trees.',
-    btn: 'See New Arrivals',
+    // btn: 'See New Arrivals',
     href: '/shop?category=plants',
   },
   
@@ -32,7 +32,7 @@ const SLIDES = [
     // tag: '🔧 Gardening Tools',
     // title: 'Everything Your\nGarden Needs',
     // sub: 'Quality pots, fertilizers, tools — all in one place.',
-    btn: 'Shop Tools & Pots',
+    // btn: 'Shop Tools & Pots',
     href: '/shop?category=pots',
   },
   {
@@ -41,7 +41,7 @@ const SLIDES = [
     // tag: '🔧 Gardening Tools',
     // title: 'Everything Your\nGarden Needs',
     // sub: 'Quality pots, fertilizers, tools — all in one place.',
-    btn: 'Shop Tools & Pots',
+    // btn: 'Shop Tools & Pots',
     href: '/shop?category=pots',
   },
 ]
