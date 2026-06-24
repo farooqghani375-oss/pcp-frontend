@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { sendChatMessage } from '@/lib/api'
+
+const CHAT_API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
@@ -14,6 +15,25 @@ export default function ChatWidget() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, open])
+
+  async function sendChatMessage(message, history = []) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
+
+    try {
+      const res = await fetch(`${CHAT_API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history }),
+        signal: controller.signal,
+      })
+
+      if (!res.ok) throw new Error('Failed to get a response')
+      return res.json()
+    } finally {
+      clearTimeout(timeout)
+    }
+  }
 
   async function handleSend(e) {
     e.preventDefault()
@@ -30,9 +50,13 @@ export default function ChatWidget() {
       const { reply } = await sendChatMessage(text, history.slice(0, -1))
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
     } catch (err) {
+      const timeoutMessage = err.name === 'AbortError'
+        ? "Sorry, this is taking longer than usual. Please try again in a moment or use WhatsApp."
+        : "Sorry, I'm having trouble responding right now. Try WhatsApp instead, or check back in a moment!"
+
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "Sorry, I'm having trouble responding right now. Try WhatsApp instead, or check back in a moment!"
+        content: timeoutMessage,
       }])
     } finally {
       setLoading(false)
