@@ -7,6 +7,7 @@ import WhatsAppFloat from '@/components/WhatsAppFloat'
 import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
 import WakeUpBackend from '@/components/WakeUpBackend'
+import PushNotifications from '@/components/PushNotifications'
 
 const BASE_URL = 'https://pcp-frontend.vercel.app'
 
@@ -59,6 +60,7 @@ export default function RootLayout({ children }) {
           <ChatWidget />
           <Toaster position="top-center" toastOptions={{ duration: 2000 }} />
           <WakeUpBackend />
+          <PushNotifications />
         </CartProvider>
       </body>
     </html>
