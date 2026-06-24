@@ -9,8 +9,6 @@ export default function ProductDetailClient({ product }) {
 
   const images = product.images?.length ? product.images : []
 
-  // colors come as objects: { hex_color, stock_qty, image_url }
-  // support old format (plain string) too just in case
   const colors = (product.colors || []).map(c =>
     typeof c === 'string'
       ? { hex_color: c, stock_qty: 0, image_url: null }
@@ -19,39 +17,42 @@ export default function ProductDetailClient({ product }) {
 
   const sizes = product.sizes || []
 
-  // Active color index
   const [activeColorIdx, setActiveColorIdx] = useState(colors.length > 0 ? 0 : null)
-
-  // Per-color quantities: { colorIndex: qty }
   const [colorQtys, setColorQtys] = useState(
     colors.reduce((acc, _, i) => ({ ...acc, [i]: 0 }), {})
   )
-
-  // Single qty for products with no colors
   const [qty, setQty] = useState(1)
-
-  // Selected size
   const [selectedSize, setSelectedSize] = useState(sizes.length > 0 ? sizes[0] : null)
-
-  // Main image index (for thumbnails)
   const [imgIdx, setImgIdx] = useState(0)
+  // FIX 1: separate override for color image — thumbnails always stay visible
+  const [colorImageOverride, setColorImageOverride] = useState(null)
 
   const activeColor = activeColorIdx !== null ? colors[activeColorIdx] : null
 
-  // When a color is clicked: set as active + switch main image to that color's image
   function handleColorClick(i) {
     setActiveColorIdx(i)
     const colorImg = colors[i]?.image_url
     if (colorImg) {
-      // find index of this color image in images array, or just show it directly
+      // Check if this color image exists in the thumbnails
       const foundIdx = images.indexOf(colorImg)
       if (foundIdx !== -1) {
+        // It's already a thumbnail — just switch to it, no override needed
         setImgIdx(foundIdx)
+        setColorImageOverride(null)
       } else {
-        // color has its own image not in thumbnails — show it as main
-        setImgIdx(-1) // -1 = show color image directly
+        // Color has its own separate image — show it as main but keep thumbnails
+        setColorImageOverride(colorImg)
       }
+    } else {
+      // No color image — clear override, stay on current thumbnail
+      setColorImageOverride(null)
     }
+  }
+
+  function handleThumbnailClick(i) {
+    setImgIdx(i)
+    setColorImageOverride(null) // clear color override when user picks a thumbnail
+    setActiveColorIdx(null)
   }
 
   function updateColorQty(i, delta) {
@@ -61,32 +62,30 @@ export default function ProductDetailClient({ product }) {
     }))
   }
 
-  // Build the main image src
-  function getMainImageSrc() {
-    if (imgIdx === -1 && activeColor?.image_url) return activeColor.image_url
-    return images[imgIdx] || null
-  }
+  // FIX 1: main image is override if set, else thumbnail
+  const mainImageSrc = colorImageOverride || images[imgIdx] || null
 
-  // Total quantity across all colors (or single qty)
   const totalQty = colors.length > 0
     ? Object.values(colorQtys).reduce((s, q) => s + q, 0)
     : qty
 
-  // Build selections summary for cart/order
   function buildSelections() {
-    if (colors.length === 0) {
-      return [{ color: null, qty }]
-    }
+    if (colors.length === 0) return [{ color: null, colorImage: null, qty }]
     return colors
-      .map((c, i) => ({ color: c.hex_color, qty: colorQtys[i] || 0 }))
+      .map((c, i) => ({
+        color: c.hex_color,
+        colorImage: c.image_url || null,   // FIX 2: include color image
+        qty: colorQtys[i] || 0
+      }))
       .filter(s => s.qty > 0)
   }
 
   function handleAddToCart() {
     const selections = buildSelections()
     if (selections.length === 0 || totalQty === 0) return
-    selections.forEach(({ color, qty }) => {
-      addToCart(product, qty, color, selectedSize)
+    selections.forEach(({ color, colorImage, qty }) => {
+      // FIX 2: pass colorImage so cart shows the right image
+      addToCart({ ...product, colorImage }, qty, color, selectedSize)
     })
   }
 
@@ -94,8 +93,6 @@ export default function ProductDetailClient({ product }) {
     handleAddToCart()
     router.push('/cart')
   }
-
-  const mainImageSrc = getMainImageSrc()
 
   return (
     <div className="pt-14 lg:pt-16 max-w-6xl mx-auto px-4 lg:px-8">
@@ -111,7 +108,6 @@ export default function ProductDetailClient({ product }) {
         Back
       </button>
 
-      {/* Main content */}
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-12">
 
         {/* ── LEFT: Images ── */}
@@ -130,15 +126,17 @@ export default function ProductDetailClient({ product }) {
             )}
           </div>
 
-          {/* Thumbnails — only show if imgIdx is not -1 (color image override) */}
-          {images.length > 1 && imgIdx !== -1 && (
+          {/* Thumbnails — FIX 1: always visible, not hidden */}
+          {images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
               {images.map((img, i) => (
                 <button
                   key={i}
-                  onClick={() => { setImgIdx(i); setActiveColorIdx(null) }}
+                  onClick={() => handleThumbnailClick(i)}
                   className={`flex-shrink-0 w-16 h-16 lg:w-20 lg:h-20 rounded-xl overflow-hidden border-2 transition-colors ${
-                    imgIdx === i ? 'border-primary' : 'border-transparent hover:border-gray-300'
+                    imgIdx === i && !colorImageOverride
+                      ? 'border-primary'
+                      : 'border-transparent hover:border-gray-300'
                   }`}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none' }} />
@@ -146,37 +144,23 @@ export default function ProductDetailClient({ product }) {
               ))}
             </div>
           )}
-
-          {/* If showing color image, show "back to product images" hint */}
-          {imgIdx === -1 && images.length > 0 && (
-            <button
-              onClick={() => setImgIdx(0)}
-              className="text-xs text-gray-400 hover:text-primary transition-colors text-center"
-            >
-              ← View all product images
-            </button>
-          )}
         </div>
 
         {/* ── RIGHT: Info ── */}
         <div className="lg:w-1/2 flex flex-col pb-8">
 
-          {/* Category + name */}
           <p className="text-xs lg:text-sm text-primary font-semibold uppercase tracking-widest">
             {product.category}
           </p>
           <h1 className="text-xl lg:text-4xl font-extrabold text-gray-900 mt-1 leading-tight">
             {product.name}
           </h1>
-
-          {/* Price */}
           <p className="text-2xl lg:text-4xl font-extrabold text-primary-dark mt-3">
             Rs {Number(product.price).toLocaleString()}
           </p>
 
           <div className="border-t border-gray-100 my-4" />
 
-          {/* Description */}
           {product.description && (
             <p className="text-sm lg:text-base text-gray-600 leading-relaxed">
               {product.description}
@@ -214,7 +198,7 @@ export default function ProductDetailClient({ product }) {
                         style={{ backgroundColor: c.hex_color }}
                       />
 
-                      {/* Color image preview (small) */}
+                      {/* Color image preview */}
                       {c.image_url && (
                         <img
                           src={c.image_url}
@@ -223,21 +207,15 @@ export default function ProductDetailClient({ product }) {
                         />
                       )}
 
-                      {/* Stock info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-500">
-                          {outOfStock
-                            ? '✗ Out of stock'
-                            : `${colorStock} available`}
+                          {outOfStock ? '✗ Out of stock' : `${colorStock} available`}
                         </p>
                       </div>
 
-                      {/* Qty counter — only show when active and in stock */}
+                      {/* Qty counter */}
                       {isActive && !outOfStock && (
-                        <div
-                          className="flex items-center gap-2"
-                          onClick={e => e.stopPropagation()}
-                        >
+                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => updateColorQty(i, -1)}
                             className="w-8 h-8 rounded-full bg-white border border-gray-200 text-lg font-bold flex items-center justify-center hover:bg-gray-100 transition-colors"
@@ -251,7 +229,7 @@ export default function ProductDetailClient({ product }) {
                         </div>
                       )}
 
-                      {/* Show qty badge when not active but qty > 0 */}
+                      {/* Badge when not active but qty > 0 */}
                       {!isActive && colorQty > 0 && (
                         <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
                           ×{colorQty}
@@ -262,7 +240,6 @@ export default function ProductDetailClient({ product }) {
                 })}
               </div>
 
-              {/* Total selected summary */}
               {totalQty > 0 && (
                 <p className="text-xs text-primary font-semibold mt-2">
                   ✓ {totalQty} item{totalQty !== 1 ? 's' : ''} selected
@@ -272,7 +249,7 @@ export default function ProductDetailClient({ product }) {
             </div>
           )}
 
-          {/* ── Single qty (no colors) ── */}
+          {/* Single qty (no colors) */}
           {colors.length === 0 && (
             <div className="mt-5">
               <p className="text-xs lg:text-sm font-semibold text-gray-700 mb-2">Quantity</p>
@@ -290,7 +267,7 @@ export default function ProductDetailClient({ product }) {
             </div>
           )}
 
-          {/* ── SIZE DROPDOWN ── */}
+          {/* Size dropdown */}
           {sizes.length > 0 && (
             <div className="mt-5">
               <p className="text-xs lg:text-sm font-semibold text-gray-700 mb-2">Size</p>
@@ -323,26 +300,23 @@ export default function ProductDetailClient({ product }) {
             <button
               onClick={handleAddToCart}
               disabled={!product.in_stock || totalQty === 0}
-              className="flex-1 border-2 border-primary text-primary font-bold py-3 lg:py-4 rounded-full text-sm lg:text-base
-                         hover:bg-green-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex-1 border-2 border-primary text-primary font-bold py-3 lg:py-4 rounded-full text-sm lg:text-base hover:bg-green-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Add to Cart
             </button>
             <button
               onClick={handleBuyNow}
               disabled={!product.in_stock || totalQty === 0}
-              className="flex-1 bg-primary text-white font-bold py-3 lg:py-4 rounded-full text-sm lg:text-base
-                         hover:bg-primary-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex-1 bg-primary text-white font-bold py-3 lg:py-4 rounded-full text-sm lg:text-base hover:bg-primary-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Buy Now
             </button>
           </div>
 
-          {/* Delivery info */}
           <div className="mt-6 bg-green-50 rounded-2xl p-4 flex flex-col gap-2">
             {[
-              { icon: '🔄', text: 'Easy returns within 7 days'         },
-              { icon: '💬', text: 'WhatsApp support available anytime'  },
+              { icon: '🔄', text: 'Easy returns within 7 days'        },
+              { icon: '💬', text: 'WhatsApp support available anytime' },
             ].map(item => (
               <div key={item.text} className="flex items-center gap-2.5">
                 <span className="text-base">{item.icon}</span>

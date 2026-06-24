@@ -79,12 +79,16 @@ export default function CartPage() {
           return (
             <div key={itemKey} className="bg-white rounded-2xl p-3 flex gap-3 shadow-sm">
               <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
-                {item.images?.[0] ? (
-                  <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl">🌿</div>
-                )}
-              </div>
+  {item.colorImage || item.images?.[0] ? (
+    <img
+      src={item.colorImage || item.images[0]}
+      alt={item.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-2xl">🌿</div>
+  )}
+</div>
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 truncate">{item.name}</p>
