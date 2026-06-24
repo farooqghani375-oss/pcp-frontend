@@ -493,25 +493,7 @@ export default function AdminDashboard() {
                                       )}
                                     </div>
                                     <div>
-  <div>
   <p className="text-sm text-gray-700">{item.product_name} ×{item.quantity}</p>
-  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-    {item.color && (
-      <div className="flex items-center gap-1">
-        <span
-          className="inline-block w-3 h-3 rounded-full border border-gray-200"
-          style={{ backgroundColor: item.color }}
-        />
-        <span className="text-[10px] text-gray-400">{item.color}</span>
-      </div>
-    )}
-    {item.size && (
-      <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">
-        {item.size}
-      </span>
-    )}
-  </div>
-</div>
   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
     {item.color && (
       <div className="flex items-center gap-1">

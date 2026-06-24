@@ -8,7 +8,6 @@ import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
 import WakeUpBackend from '@/components/WakeUpBackend'
 
-// Change this to your real domain once you buy one.
 const BASE_URL = 'https://pcp-frontend.vercel.app'
 
 export const metadata = {
@@ -33,11 +32,23 @@ export const metadata = {
     title: 'Plant Center Peshawar',
     description: 'Peshawar\'s trusted plant store — plants, pots, and gardening essentials.',
   },
+  manifest: '/manifest.json',
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* PWA */}
+        <meta name="theme-color" content="#166534" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="PCP" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/manifest.json" />
+      </head>
       <body>
         <CartProvider>
           <Navbar />
