@@ -106,14 +106,6 @@ export default function HomeClient({ products, marqueeProducts }) {
                 {s.title}
               </h1>
               <p className="text-green-200 text-sm lg:text-base mt-2 max-w-xs lg:max-w-md">{s.sub}</p>
-              <Link
-                href={s.href}
-                className="inline-block mt-4 lg:mt-5 bg-white text-primary-dark text-[10px] lg:text-xs font-bold
-                           px-4 lg:px-6 py-2 lg:py-2.5 rounded-full hover:bg-green-50 transition-colors
-                           uppercase tracking-wide w-fit"
-              >
-                {s.btn}
-              </Link>
             </div>
           </div>
         ))}
