@@ -21,37 +21,35 @@ export default function ProductDetailClient({ product }) {
   const [colorQtys, setColorQtys] = useState(
     colors.reduce((acc, _, i) => ({ ...acc, [i]: 0 }), {})
   )
+  // Per-color selected size: { colorIndex: { size_label, unit } }
+  const [colorSizes, setColorSizes] = useState(
+    colors.reduce((acc, _, i) => ({ ...acc, [i]: sizes.length > 0 ? sizes[0] : null }), {})
+  )
   const [qty, setQty] = useState(1)
+  // Single size for products with no colors
   const [selectedSize, setSelectedSize] = useState(sizes.length > 0 ? sizes[0] : null)
   const [imgIdx, setImgIdx] = useState(0)
-  // FIX 1: separate override for color image — thumbnails always stay visible
   const [colorImageOverride, setColorImageOverride] = useState(null)
-
-  const activeColor = activeColorIdx !== null ? colors[activeColorIdx] : null
 
   function handleColorClick(i) {
     setActiveColorIdx(i)
     const colorImg = colors[i]?.image_url
     if (colorImg) {
-      // Check if this color image exists in the thumbnails
       const foundIdx = images.indexOf(colorImg)
       if (foundIdx !== -1) {
-        // It's already a thumbnail — just switch to it, no override needed
         setImgIdx(foundIdx)
         setColorImageOverride(null)
       } else {
-        // Color has its own separate image — show it as main but keep thumbnails
         setColorImageOverride(colorImg)
       }
     } else {
-      // No color image — clear override, stay on current thumbnail
       setColorImageOverride(null)
     }
   }
 
   function handleThumbnailClick(i) {
     setImgIdx(i)
-    setColorImageOverride(null) // clear color override when user picks a thumbnail
+    setColorImageOverride(null)
     setActiveColorIdx(null)
   }
 
@@ -62,7 +60,11 @@ export default function ProductDetailClient({ product }) {
     }))
   }
 
-  // FIX 1: main image is override if set, else thumbnail
+  function updateColorSize(colorIdx, sizeValue) {
+    const [label, unit] = sizeValue.split('||')
+    setColorSizes(prev => ({ ...prev, [colorIdx]: { size_label: label, unit } }))
+  }
+
   const mainImageSrc = colorImageOverride || images[imgIdx] || null
 
   const totalQty = colors.length > 0
@@ -70,12 +72,15 @@ export default function ProductDetailClient({ product }) {
     : qty
 
   function buildSelections() {
-    if (colors.length === 0) return [{ color: null, colorImage: null, qty }]
+    if (colors.length === 0) {
+      return [{ color: null, colorImage: null, qty, size: selectedSize }]
+    }
     return colors
       .map((c, i) => ({
         color: c.hex_color,
-        colorImage: c.image_url || null,   // FIX 2: include color image
-        qty: colorQtys[i] || 0
+        colorImage: c.image_url || null,
+        qty: colorQtys[i] || 0,
+        size: colorSizes[i] || null,
       }))
       .filter(s => s.qty > 0)
   }
@@ -83,9 +88,8 @@ export default function ProductDetailClient({ product }) {
   function handleAddToCart() {
     const selections = buildSelections()
     if (selections.length === 0 || totalQty === 0) return
-    selections.forEach(({ color, colorImage, qty }) => {
-      // FIX 2: pass colorImage so cart shows the right image
-      addToCart({ ...product, colorImage }, qty, color, selectedSize)
+    selections.forEach(({ color, colorImage, qty, size }) => {
+      addToCart({ ...product, colorImage }, qty, color, size)
     })
   }
 
@@ -112,7 +116,6 @@ export default function ProductDetailClient({ product }) {
 
         {/* ── LEFT: Images ── */}
         <div className="w-full lg:w-[360px] flex flex-col gap-3">
-          {/* Main image */}
           <div className="rounded-2xl border border-r-4 overflow-hidden bg-white h-72 lg:h-[320px]">
             {mainImageSrc ? (
               <img
@@ -126,7 +129,6 @@ export default function ProductDetailClient({ product }) {
             )}
           </div>
 
-          {/* Thumbnails — FIX 1: always visible, not hidden */}
           {images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
               {images.map((img, i) => (
@@ -167,7 +169,7 @@ export default function ProductDetailClient({ product }) {
             </p>
           )}
 
-          {/* ── COLORS with per-color qty ── */}
+          {/* ── COLORS with per-color qty + size ── */}
           {colors.length > 0 && (
             <div className="mt-5">
               <p className="text-xs lg:text-sm font-semibold text-gray-700 mb-3">
@@ -179,12 +181,15 @@ export default function ProductDetailClient({ product }) {
                   const colorStock = c.stock_qty ?? 0
                   const colorQty = colorQtys[i] || 0
                   const outOfStock = colorStock === 0
+                  const thisSizeVal = colorSizes[i]
+                    ? `${colorSizes[i].size_label}||${colorSizes[i].unit}`
+                    : ''
 
                   return (
                     <div
                       key={i}
                       onClick={() => !outOfStock && handleColorClick(i)}
-                      className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all cursor-pointer ${
+                      className={`flex flex-col gap-2 p-3 rounded-2xl border-2 transition-all cursor-pointer ${
                         isActive
                           ? 'border-primary bg-green-50'
                           : outOfStock
@@ -192,48 +197,76 @@ export default function ProductDetailClient({ product }) {
                             : 'border-gray-200 hover:border-primary/50'
                       }`}
                     >
-                      {/* Color dot */}
-                      <div
-                        className={`w-8 h-8 rounded-full border-2 flex-shrink-0 ${isActive ? 'border-primary' : 'border-gray-300'}`}
-                        style={{ backgroundColor: c.hex_color }}
-                      />
-
-                      {/* Color image preview */}
-                      {c.image_url && (
-                        <img
-                          src={c.image_url}
-                          alt=""
-                          className="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0"
+                      {/* Row 1: color dot + image + stock + qty counter */}
+                      <div className="flex items-center gap-3">
+                        {/* Color dot */}
+                        <div
+                          className={`w-8 h-8 rounded-full border-2 flex-shrink-0 ${isActive ? 'border-primary' : 'border-gray-300'}`}
+                          style={{ backgroundColor: c.hex_color }}
                         />
-                      )}
 
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500">
-                          {outOfStock ? '✗ Out of stock' : `${colorStock} available`}
-                        </p>
+                        {/* Color image preview */}
+                        {c.image_url && (
+                          <img
+                            src={c.image_url}
+                            alt=""
+                            className="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0"
+                          />
+                        )}
+
+                        {/* Stock */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-500">
+                            {outOfStock ? '✗ Out of stock' : `${colorStock} available`}
+                          </p>
+                        </div>
+
+                        {/* Qty counter — visible when active */}
+                        {isActive && !outOfStock && (
+                          <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                            <button
+                              onClick={() => updateColorQty(i, -1)}
+                              className="w-8 h-8 rounded-full bg-white border border-gray-200 text-lg font-bold flex items-center justify-center hover:bg-gray-100 transition-colors"
+                            >−</button>
+                            <span className="w-6 text-center font-bold text-sm">{colorQty}</span>
+                            <button
+                              onClick={() => updateColorQty(i, 1)}
+                              disabled={colorQty >= colorStock}
+                              className="w-8 h-8 rounded-full bg-primary text-white text-lg font-bold flex items-center justify-center hover:bg-primary-dark transition-colors disabled:opacity-40"
+                            >+</button>
+                          </div>
+                        )}
+
+                        {/* Badge when not active but qty > 0 */}
+                        {!isActive && colorQty > 0 && (
+                          <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0">
+                            ×{colorQty}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Qty counter */}
-                      {isActive && !outOfStock && (
-                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                          <button
-                            onClick={() => updateColorQty(i, -1)}
-                            className="w-8 h-8 rounded-full bg-white border border-gray-200 text-lg font-bold flex items-center justify-center hover:bg-gray-100 transition-colors"
-                          >−</button>
-                          <span className="w-6 text-center font-bold text-sm">{colorQty}</span>
-                          <button
-                            onClick={() => updateColorQty(i, 1)}
-                            disabled={colorQty >= colorStock}
-                            className="w-8 h-8 rounded-full bg-primary text-white text-lg font-bold flex items-center justify-center hover:bg-primary-dark transition-colors disabled:opacity-40"
-                          >+</button>
+                      {/* Row 2: Size dropdown — only if product has sizes AND color is active */}
+                      {isActive && !outOfStock && sizes.length > 0 && (
+                        <div onClick={e => e.stopPropagation()}>
+                          <select
+                            value={thisSizeVal}
+                            onChange={e => updateColorSize(i, e.target.value)}
+                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary bg-white text-gray-700 mt-1"
+                          >
+                            {sizes.map((s, si) => (
+                              <option key={si} value={`${s.size_label}||${s.unit}`}>
+                                {s.size_label} {s.unit}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       )}
 
-                      {/* Badge when not active but qty > 0 */}
-                      {!isActive && colorQty > 0 && (
-                        <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                          ×{colorQty}
-                        </span>
+                      {/* Show selected size badge when not active but qty > 0 */}
+                      {!isActive && colorQty > 0 && colorSizes[i] && sizes.length > 0 && (
+                        <p className="text-[10px] text-gray-400 pl-1">
+                          Size: {colorSizes[i].size_label} {colorSizes[i].unit}
+                        </p>
                       )}
                     </div>
                   )
@@ -251,40 +284,42 @@ export default function ProductDetailClient({ product }) {
 
           {/* Single qty (no colors) */}
           {colors.length === 0 && (
-            <div className="mt-5">
-              <p className="text-xs lg:text-sm font-semibold text-gray-700 mb-2">Quantity</p>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setQty(q => Math.max(1, q - 1))}
-                  className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-white border border-gray-200 text-lg font-bold flex items-center justify-center hover:bg-gray-100 transition-colors"
-                >−</button>
-                <span className="w-8 text-center font-bold text-lg">{qty}</span>
-                <button
-                  onClick={() => setQty(q => q + 1)}
-                  className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-primary text-white text-lg font-bold flex items-center justify-center hover:bg-primary-dark transition-colors"
-                >+</button>
+            <div className="mt-5 flex flex-col gap-4">
+              <div>
+                <p className="text-xs lg:text-sm font-semibold text-gray-700 mb-2">Quantity</p>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setQty(q => Math.max(1, q - 1))}
+                    className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-white border border-gray-200 text-lg font-bold flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  >−</button>
+                  <span className="w-8 text-center font-bold text-lg">{qty}</span>
+                  <button
+                    onClick={() => setQty(q => q + 1)}
+                    className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-primary text-white text-lg font-bold flex items-center justify-center hover:bg-primary-dark transition-colors"
+                  >+</button>
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Size dropdown */}
-          {sizes.length > 0 && (
-            <div className="mt-5">
-              <p className="text-xs lg:text-sm font-semibold text-gray-700 mb-2">Size</p>
-              <select
-                value={selectedSize ? `${selectedSize.size_label}-${selectedSize.unit}` : ''}
-                onChange={e => {
-                  const [label, unit] = e.target.value.split('-')
-                  setSelectedSize({ size_label: label, unit })
-                }}
-                className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary bg-white font-medium text-gray-700"
-              >
-                {sizes.map((s, i) => (
-                  <option key={i} value={`${s.size_label}-${s.unit}`}>
-                    {s.size_label} {s.unit}
-                  </option>
-                ))}
-              </select>
+              {/* Size dropdown for no-color products */}
+              {sizes.length > 0 && (
+                <div>
+                  <p className="text-xs lg:text-sm font-semibold text-gray-700 mb-2">Size</p>
+                  <select
+                    value={selectedSize ? `${selectedSize.size_label}||${selectedSize.unit}` : ''}
+                    onChange={e => {
+                      const [label, unit] = e.target.value.split('||')
+                      setSelectedSize({ size_label: label, unit })
+                    }}
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary bg-white font-medium text-gray-700"
+                  >
+                    {sizes.map((s, i) => (
+                      <option key={i} value={`${s.size_label}||${s.unit}`}>
+                        {s.size_label} {s.unit}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
