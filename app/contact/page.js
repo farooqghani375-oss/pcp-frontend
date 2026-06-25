@@ -70,9 +70,9 @@ export default function ContactPage() {
                   // { label: 'Facebook',  color: 'bg-blue-600',  emoji: '📘' },
                   // { label: 'Instagram', color: 'bg-pink-500',  emoji: '📸' },
                   // { label: 'WhatsApp',  color: 'bg-green-500', emoji: '💬' },
-                  { label: 'Facebook',  src: '/images/facebook.svg',  href: 'https://www.facebook.com/Asadk05' },
-                { label: 'Instagram', src: '/images/instagram.jpeg', href: 'https://www.instagram.com/plant_center_peshawar/?hl=en' },
-                { label: 'tiktok',  src: '/images/tiktok.png',  href: 'https://www.tiktok.com/@plantcenter2' },
+                  { label: 'Facebook',  src: '/images/facebook.svg', color: 'bg-blue-600',  href: 'https://www.facebook.com/Asadk05' },
+                { label: 'Instagram', src: '/images/instagram.jpeg', color: 'bg-pink-500', href: 'https://www.instagram.com/plant_center_peshawar/?hl=en' },
+                { label: 'tiktok',  src: '/images/tiktok.png',  color: 'bg-green-600', href: 'https://www.tiktok.com/@plantcenter2' },
                 ].map(s => (
                   <button
                     key={s.label}
