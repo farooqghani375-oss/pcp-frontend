@@ -67,12 +67,10 @@ export default function ContactPage() {
               <p className="font-semibold text-gray-800 text-sm mb-3">Follow Us</p>
               <div className="flex gap-3">
                 {[
-                  // { label: 'Facebook',  color: 'bg-blue-600',  emoji: '📘' },
-                  // { label: 'Instagram', color: 'bg-pink-500',  emoji: '📸' },
-                  // { label: 'WhatsApp',  color: 'bg-green-500', emoji: '💬' },
-                  { label: 'Facebook',  src: '/images/facebook.svg', color: 'bg-blue-600',  href: 'https://www.facebook.com/Asadk05' },
-                { label: 'Instagram', src: '/images/instagram.jpeg', color: 'bg-pink-500', href: 'https://www.instagram.com/plant_center_peshawar/?hl=en' },
-                { label: 'tiktok',  src: '/images/tiktok.png',  color: 'bg-green-600', href: 'https://www.tiktok.com/@plantcenter2' },
+                  { label: 'Facebook',  color: 'bg-blue-600',  emoji: '📘' },
+                  { label: 'Instagram', color: 'bg-pink-500',  emoji: '📸' },
+                  { label: 'WhatsApp',  color: 'bg-green-500', emoji: '💬' },
+                 
                 ].map(s => (
                   <button
                     key={s.label}
