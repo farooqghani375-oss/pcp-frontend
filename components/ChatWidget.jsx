@@ -10,6 +10,7 @@ export default function ChatWidget() {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [wakingUp, setWakingUp] = useState(false)
   const scrollRef = useRef(null)
 
   useEffect(() => {
@@ -18,8 +19,8 @@ export default function ChatWidget() {
 
   async function sendChatMessage(message, history = []) {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
-
+    // 25 seconds — enough time for Render free tier to wake up
+    const timeout = setTimeout(() => controller.abort(), 25000)
     try {
       const res = await fetch(`${CHAT_API_BASE}/chat`, {
         method: 'POST',
@@ -27,7 +28,6 @@ export default function ChatWidget() {
         body: JSON.stringify({ message, history }),
         signal: controller.signal,
       })
-
       if (!res.ok) throw new Error('Failed to get a response')
       return res.json()
     } finally {
@@ -44,32 +44,29 @@ export default function ChatWidget() {
     setMessages(newMessages)
     setInput('')
     setLoading(true)
+    setWakingUp(false)
+
+    // After 5 seconds still loading → show "waking up" hint
+    const wakeTimer = setTimeout(() => setWakingUp(true), 5000)
 
     try {
       const history = newMessages.slice(-8).map(m => ({ role: m.role, content: m.content }))
       const { reply } = await sendChatMessage(text, history.slice(0, -1))
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
     } catch (err) {
-      const timeoutMessage = err.name === 'AbortError'
-        ? "Sorry, this is taking longer than usual. Please try again in a moment or use WhatsApp."
-        : "Sorry, I'm having trouble responding right now. Try WhatsApp instead, or check back in a moment!"
-
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: timeoutMessage,
-      }])
+      const msg = err.name === 'AbortError'
+        ? "⏱ Taking too long! The server is waking up — please try again in a moment, or message us on WhatsApp!"
+        : "Sorry, I'm having trouble responding right now. Try WhatsApp or check back in a moment!"
+      setMessages(prev => [...prev, { role: 'assistant', content: msg }])
     } finally {
+      clearTimeout(wakeTimer)
       setLoading(false)
+      setWakingUp(false)
     }
   }
 
   return (
     <>
-      {/* Floating toggle button — only shown when the panel is closed.
-          WhatsApp button sits at bottom-14 (56px) and is 48px tall (h-12),
-          so its top edge is at 104px. This button sits at 116px, giving a
-          clean, deliberate 12px gap between the two — no overlap, no
-          awkward closeness. */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -80,12 +77,6 @@ export default function ChatWidget() {
         </button>
       )}
 
-      {/* Chat panel.
-          Same bottom-[116px] offset as the toggle button, keeping that
-          same clean 12px gap above the WhatsApp button. Height is capped
-          by BOTH a max size (28rem) AND the available viewport space, so
-          it can never render above the top of the screen no matter how
-          short the browser window is. */}
       {open && (
         <div
           className="fixed right-4 bottom-[116px] z-40 w-[calc(100vw-2rem)] max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
@@ -96,11 +87,15 @@ export default function ChatWidget() {
             <div className="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-lg">🤖</div>
             <div className="flex-1">
               <p className="text-sm font-bold leading-tight">Plant Center Assistant</p>
-              <p className="text-[10px] text-green-300">Usually replies instantly</p>
+              <p className="text-[10px] text-green-300">
+                {wakingUp ? '⏳ Waking up server...' : 'Usually replies instantly'}
+              </p>
             </div>
-            <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white text-lg leading-none px-1" aria-label="Close chat">
-              ✕
-            </button>
+            <button
+              onClick={() => setOpen(false)}
+              className="text-white/80 hover:text-white text-lg leading-none px-1"
+              aria-label="Close chat"
+            >✕</button>
           </div>
 
           {/* Messages */}
@@ -119,7 +114,7 @@ export default function ChatWidget() {
             ))}
             {loading && (
               <div className="bg-white text-gray-400 self-start rounded-2xl rounded-bl-md px-3 py-2 text-sm shadow-sm">
-                Typing...
+                {wakingUp ? '⏳ Server waking up, almost there...' : 'Typing...'}
               </div>
             )}
           </div>
@@ -136,9 +131,7 @@ export default function ChatWidget() {
               type="submit"
               disabled={loading || !input.trim()}
               className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center disabled:opacity-40 flex-shrink-0"
-            >
-              ➤
-            </button>
+            >➤</button>
           </form>
         </div>
       )}
