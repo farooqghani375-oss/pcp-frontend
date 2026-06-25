@@ -50,11 +50,11 @@ const SLIDES = [
 // Set `image` to a filename from your public/images/ folder.
 // If the image doesn't exist it gracefully falls back to the emoji.
 const CATEGORIES = [
-  { label: 'Plants',      emoji: '🌱', image: '12.webp',  href: '/shop?category=plants'      },
-  { label: 'Pots',        emoji: '🪴', image: 'pro (3).png',  href: '/shop?category=pots'        },
-  { label: 'Fertilizers', emoji: '🌿', image: 'fert1.jpeg',    href: '/shop?category=fertilizers' },
-  { label: 'Tools',       emoji: '🔧', image: 'tool1.jpeg',    href: '/shop?category=tools'       },
-  { label: 'Seeds',       emoji: '🌾', image: 'seed1.jpeg',   href: '/shop'                      },
+  { label: 'Plants',      emoji: '🌱', image: 'plants.png',  href: '/shop?category=plants'      },
+  { label: 'Pots',        emoji: '🪴', image: 'pots.jpeg',  href: '/shop?category=pots'        },
+  { label: 'Fertilizers', emoji: '🌿', image: 'fert.png',    href: '/shop?category=fertilizers' },
+  { label: 'Tools',       emoji: '🔧', image: 'tool.png',    href: '/shop?category=tools'       },
+  { label: 'Seeds',       emoji: '🌾', image: 'seed.png',   href: '/shop'                      },
 ]
 
 export default function HomeClient({ products, marqueeProducts }) {
