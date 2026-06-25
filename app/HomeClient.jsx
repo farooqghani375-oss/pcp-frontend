@@ -149,7 +149,7 @@ export default function HomeClient({ products, marqueeProducts }) {
         <h2 className="text-sm lg:text-xl font-bold text-gray-700 uppercase tracking-wide text-center mb-5 lg:mb-8">
           Shop Categories
         </h2>
-        <div className="flex gap-3 lg:gap-12 lg:justify-center overflow-x-auto no-scrollbar pb-2">
+        <div className="flex gap-2 lg:gap-12 lg:justify-center overflow-x-auto no-scrollbar pb-2">
           {CATEGORIES.map(cat => (
             <Link
               key={cat.label}
