@@ -16,4 +16,4 @@ const nextConfig = {
   },
 }
 
-export default pwa(nextConfig)
+export default nextConfig
