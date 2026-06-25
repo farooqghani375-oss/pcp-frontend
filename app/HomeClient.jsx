@@ -54,7 +54,7 @@ const CATEGORIES = [
   { label: 'Pots',        emoji: '🪴', image: 'pots.jpeg',  href: '/shop?category=pots'        },
   { label: 'Fertilizers', emoji: '🌿', image: 'fert.png',    href: '/shop?category=fertilizers' },
   { label: 'Tools',       emoji: '🔧', image: 'tool.png',    href: '/shop?category=tools'       },
-  { label: 'Seeds',       emoji: '🌾', image: 'seed.png',   href: '/shop'                      },
+  { label: 'Seeds',       emoji: '🌾', image: 'seed.png',   href: '/shop?category=seeds'                      },
 ]
 
 export default function HomeClient({ products, marqueeProducts }) {

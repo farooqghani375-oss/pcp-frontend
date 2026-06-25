@@ -731,12 +731,26 @@ export default function AdminDashboard() {
                   </span>
                 </label>
                 {imagePreview.length > 0 && (
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {imagePreview.map((url, i) => (
-                      <img key={i} src={url} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
-                    ))}
-                  </div>
-                )}
+  <div className="flex gap-2 mt-2 flex-wrap">
+    {imagePreview.map((url, i) => (
+      <div key={i} className="relative group">
+        <img src={url} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+        <button
+          type="button"
+          onClick={() => {
+            const newPreview = imagePreview.filter((_, idx) => idx !== i)
+            setImagePreview(newPreview)
+            setProductForm(f => ({
+              ...f,
+              images: newPreview.join(', ')
+            }))
+          }}
+          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+        >✕</button>
+      </div>
+    ))}
+  </div>
+)}
               </div>
 
               {/* ── COLORS SECTION ── */}
