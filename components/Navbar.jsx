@@ -190,43 +190,99 @@ export default function Navbar() {
         </nav>
 
         {/* Right side icons */}
-        <div className="flex items-center gap-3 ml-3">
-          {/* Mobile search toggle */}
-          {showSearch ? (
-            <div ref={searchRef} className="relative lg:hidden w-full">
-              <div className="flex items-center gap-1">
-              <input
-  autoFocus
-  value={search}
-  onChange={e => { setSearch(e.target.value); setShowSuggestions(true) }}
-  onFocus={() => setShowSuggestions(true)}
-  onKeyDown={handleKeyDown}
-  placeholder="Search plants, pots..."
-  className="border border-gray-200 rounded-full px-4 py-2 text-sm w-52 outline-none focus:border-primary bg-gray-50"
-/>
-                <button type="button" onClick={() => { setShowSearch(false); setShowSuggestions(false) }} className="text-gray-400 text-lg">✕</button>
-              </div>
-              <SuggestionsDropdown />
-            </div>
-          ) : (
-            <button onClick={() => setShowSearch(true)} className="text-gray-600 lg:hidden">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-          )}
+        <div className="flex items-center justify-between px-4 lg:px-8 h-14 lg:h-16 max-w-7xl mx-auto">
 
-          <Link href="/cart" className="relative">
-            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            {totalItems > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                {totalItems}
-              </span>
-            )}
-          </Link>
+  {/* Mobile search expanded — full width, logo hidden */}
+  {showSearch ? (
+    <div ref={searchRef} className="flex items-center gap-2 w-full lg:hidden">
+      <div className="relative flex-1">
+        <input
+          autoFocus
+          value={search}
+          onChange={e => { setSearch(e.target.value); setShowSuggestions(true) }}
+          onFocus={() => setShowSuggestions(true)}
+          onKeyDown={handleKeyDown}
+          placeholder="Search plants, pots..."
+          className="w-full border border-gray-200 rounded-full px-4 py-2.5 text-sm outline-none focus:border-primary bg-gray-50"
+        />
+        <SuggestionsDropdown />
+      </div>
+      <button
+        type="button"
+        onClick={() => { setShowSearch(false); setShowSuggestions(false); setSearch('') }}
+        className="text-gray-500 hover:text-gray-700 font-semibold text-sm flex-shrink-0"
+      >✕</button>
+    </div>
+  ) : (
+    <>
+      {/* Logo — hidden when search is open */}
+      <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+        <img src="/images/logo.jpeg" alt="Plant Center Peshawar" className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover" />
+        <div className="leading-tight">
+          <p className="text-xs lg:text-sm font-bold text-primary-dark uppercase tracking-wide">Plant Center</p>
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest">Peshawar</p>
         </div>
+      </Link>
+
+      {/* Desktop search bar */}
+      <div ref={desktopSearchRef} className="hidden lg:flex flex-1 max-w-md mx-8 relative">
+        <div className="relative w-full">
+          <input
+            value={search}
+            onChange={e => { setSearch(e.target.value); setShowSuggestions(true) }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search plants, pots..."
+            className="w-full border border-gray-200 rounded-full px-5 py-2 text-sm outline-none focus:border-primary bg-gray-50"
+          />
+          <button onClick={() => goToSearch(search)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+        <SuggestionsDropdown />
+      </div>
+
+      {/* Desktop nav links */}
+      <nav className="hidden lg:flex items-center gap-1">
+        {NAV_LINKS.map(link => (
+          <Link
+            key={link.label}
+            href={link.href}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+              pathname === link.href ? 'bg-primary text-white' : 'text-gray-600 hover:text-primary hover:bg-green-50'
+            }`}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Right icons */}
+      <div className="flex items-center gap-3 ml-3">
+        {/* Mobile search icon */}
+        <button onClick={() => setShowSearch(true)} className="text-gray-600 lg:hidden">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+
+        {/* Cart */}
+        <Link href="/cart" className="relative">
+          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          {totalItems > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              {totalItems}
+            </span>
+          )}
+        </Link>
+      </div>
+    </>
+  )}
+</div>
       </div>
     </header>
   )

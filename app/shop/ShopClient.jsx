@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import ProductCard from '@/components/ProductCard'
 
-const CATS = ['all', 'plants', 'pots', 'tools', 'fertilizers']
+const CATS = ['all', 'plants', 'pots', 'tools', 'fertilizers', 'seeds']
 
 export default function ShopClient({ products }) {
   const searchParams = useSearchParams()
