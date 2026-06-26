@@ -68,14 +68,19 @@ export default function ChatWidget() {
   return (
     <>
       {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed right-4 bottom-[116px] z-40 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-          aria-label="Chat with us"
-        >
-          <span className="text-white text-2xl leading-none">🤖</span>
-        </button>
-      )}
+  <div className="fixed right-4 bottom-[116px] z-40 flex flex-col items-center gap-1">
+    <span className="bg-primary text-white text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-md whitespace-nowrap">
+      AI Help 🤖
+    </span>
+    <button
+      onClick={() => setOpen(true)}
+      className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+      aria-label="Chat with us"
+    >
+      <span className="text-white text-2xl leading-none">🤖</span>
+    </button>
+  </div>
+)}
 
       {open && (
         <div
